@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"net"
+	"os"
 	"proof_of_work/pkg"
 	"strconv"
 	"strings"
@@ -45,17 +45,37 @@ func parseChallenge(message string) (int64, int, error) {
 }
 
 func main() {
-	hostFlag := flag.String("host", "localhost:8080", "host of server")
-	timeoutFlag := flag.Duration("timeout", 15*time.Second, "set timeout for connection")
-	flag.Parse()
+	host := os.Getenv("HOST")
+	if host == "" {
+		fmt.Println("Empty host env")
+		return
+	}
 
-	timeout := *timeoutFlag
+	port := os.Getenv("PORT")
+	if port == "" {
+		fmt.Println("Empty port env")
+		return
+	}
+
+	timeout := os.Getenv("TIMEOUT")
+	if timeout == "" {
+		fmt.Println("Empty timeout env")
+		return
+	}
+
+	timeoutDur, err := time.ParseDuration(timeout)
+	if err != nil {
+		fmt.Println("Error parsing timeout:", err)
+		return
+	}
+
+	var addr = fmt.Sprintf("%s:%s", host, port)
 	dialer := &net.Dialer{
-		Timeout: timeout,
+		Timeout: timeoutDur,
 	}
 
 	// Connect to the server
-	conn, err := dialer.Dial("tcp", *hostFlag)
+	conn, err := dialer.Dial("tcp", addr)
 	if err != nil {
 		fmt.Println("Error connecting:", err)
 		return
@@ -87,7 +107,7 @@ func main() {
 
 	response = string(buffer[:n])
 	if len(response) == 0 {
-		fmt.Println("EOF")
+		fmt.Println("EOF", response)
 		return
 	}
 	fmt.Println("Got message:", response)

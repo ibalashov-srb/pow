@@ -1,0 +1,14 @@
+# Докер файл для билда прилы
+FROM golang:1.20.1
+
+WORKDIR /app
+COPY . .
+
+RUN go build -o client_app ./client/main.go
+
+ENV HOST=127.0.0.1
+ENV PORT=8080
+ENV TIMEOUT=10s
+EXPOSE $PORT:$PORT
+
+CMD ["./client_app"]

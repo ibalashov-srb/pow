@@ -1,6 +1,7 @@
 #!/bin/bash
+# Use this script for local check
 
-count=150
+count=100
 
 for ((i=1; i<=count; i++))
 do
