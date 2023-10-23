@@ -1,16 +1,26 @@
-# Докер файл для билда прилы
-FROM golang:1.20.1
+# Dockerfile for building the application
+FROM golang:1.20.1 AS builder
 
 WORKDIR /app
 COPY . .
 
 RUN go build -o server_app ./server/main.go
 
-ENV HOST=127.0.0.1
+# Create a new image with only the necessary artifacts
+FROM ubuntu:latest
+
+WORKDIR /app
+
+# Copy the client_app binary from the builder image
+COPY --from=builder /app/server_app ./server_app
+
+# Set environment variables
+ENV HOST=0.0.0.0
 ENV PORT=8080
 ENV TIMEOUT=10s
 ENV LEADING_ZEROS=4
 ENV RANDOM_RANGE=10000
-EXPOSE 127.0.0.1:8080:8080
+EXPOSE 8080
 
+# Start the client_app
 CMD ["./server_app"]
